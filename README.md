@@ -124,7 +124,7 @@ promptex -p 4000
 
 ## 📄 License
 
-MIT © **Your Name**
+MIT © **Vedant020000**
 
 ---
 
