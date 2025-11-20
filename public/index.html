@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CONTEXTOR // ULTIMATE</title>
+    <style>
+      /* THEME: GitHub Dark Dimmed */
+      :root {
+        --bg: #0d1117;
+        --text: #c9d1d9;
+        --border: 1px solid #30363d;
+        --accent: #58a6ff;
+        --surface: #161b22;
+        --mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        margin: 0;
+        padding: 20px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* UTILS */
+      .uc {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .bold {
+        font-weight: 700;
+      }
+      .flex {
+        display: flex;
+        gap: 10px;
+      }
+      .grow {
+        flex-grow: 1;
+      }
+
+      /* BUTTONS */
+      .btn {
+        background: var(--surface);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 5px 15px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--mono);
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: var(--accent);
+        color: #0d1117;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--surface);
+        border-color: #30363d;
+        color: #8b949e;
+      }
+
+      /* LAYOUT */
+      .grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 20px;
+        height: 100%;
+      }
+
+      /* HEADERS & PANELS */
+      .header {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: var(--border);
+        padding: 15px;
+        background: var(--surface);
+        border-radius: 6px;
+      }
+      .panel {
+        border: var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 6px;
+      }
+      .panel-head {
+        background: #21262d;
+        padding: 10px;
+        border-bottom: var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #8b949e;
+      }
+
+      /* FILES LIST */
+      .file-list {
+        overflow-y: auto;
+        flex: 1;
+      }
+      .file-item {
+        padding: 8px 10px;
+        border-bottom: 1px solid #30363d;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        transition: background 0.1s;
+      }
+      .file-item:hover {
+        background: #21262d;
+      }
+      .file-item.selected {
+        background: rgba(88, 166, 255, 0.15);
+        color: #58a6ff;
+      }
+
+      /* Custom Checkbox */
+      .check {
+        width: 14px;
+        height: 14px;
+        border: 1px solid #8b949e;
+        margin-right: 10px;
+        position: relative;
+        border-radius: 3px;
+      }
+      .file-item.selected .check {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+      .file-item.selected .check::after {
+        content: "✓";
+        position: absolute;
+        top: -3px;
+        left: 1px;
+        font-size: 10px;
+        color: #0d1117;
+        font-weight: bold;
+      }
+
+      /* PRESETS BAR */
+      .presets-bar {
+        display: flex;
+        gap: 5px;
+        overflow-x: auto;
+        padding: 8px;
+        border-bottom: var(--border);
+        background: #0d1117;
+      }
+      .preset-tag {
+        border: 1px solid #30363d;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 4px;
+        color: #8b949e;
+      }
+      .preset-tag:hover {
+        background: #30363d;
+        color: #c9d1d9;
+      }
+      .preset-del {
+        color: #ff7b72;
+        font-weight: bold;
+        padding: 0 2px;
+      }
+      .preset-del:hover {
+        background: #30363d;
+        border-radius: 3px;
+      }
+
+      /* INPUTS & PREVIEW */
+      textarea {
+        width: 100%;
+        height: 100%;
+        border: none;
+        resize: none;
+        padding: 15px;
+        outline: none;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        background: var(--surface);
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      input[type="text"] {
+        background: #0d1117;
+        color: var(--text);
+        border: 1px solid #30363d;
+        padding: 8px;
+        font-family: var(--mono);
+        border-radius: 4px;
+        outline: none;
+      }
+      input[type="text"]:focus {
+        border-color: var(--accent);
+      }
+
+      select {
+        border: 1px solid #30363d;
+        padding: 5px;
+        font-family: var(--mono);
+        background: #21262d;
+        color: var(--text);
+        border-radius: 4px;
+      }
+
+      /* TOGGLES */
+      .toggle-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        user-select: none;
+        color: #8b949e;
+      }
+      .toggle-label:hover {
+        color: #c9d1d9;
+      }
+      input[type="checkbox"] {
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--surface);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #30363d;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #8b949e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <!-- HEADER -->
+      <div class="header">
+        <div>
+          <h1
+            style="margin: 0; font-size: 1.2rem; letter-spacing: -0.5px"
+            class="bold"
+          >
+            CONTEXTOR <span style="color: var(--accent)">// CLI</span>
+          </h1>
+          <div style="font-size: 0.7rem; margin-top: 5px; color: #8b949e">
+            PORT:
+            <span id="port-display" style="color: var(--accent)">...</span> |
+            IGNORE: .gitignore active
+          </div>
+        </div>
+
+        <div class="flex" style="align-items: center">
+          <input
+            type="text"
+            id="preset-name"
+            placeholder="Preset Name..."
+            style="width: 150px"
+          />
+          <button class="btn" onclick="savePreset()">SAVE PRESET</button>
+        </div>
+      </div>
+
+      <!-- LEFT: FILES -->
+      <div class="panel">
+        <div class="panel-head uc">
+          FILES
+          <div class="toggle-label">
+            <input type="checkbox" id="watch-mode" onchange="toggleWatch()" />
+            Auto-Watch
+          </div>
+        </div>
+
+        <div class="presets-bar" id="presets-list"></div>
+
+        <input
+          type="text"
+          id="search"
+          placeholder="Filter files (e.g. .ts, components)..."
+          style="
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid #30363d;
+            width: 100%;
+            background: var(--surface);
+            border-radius: 0;
+          "
+        />
+
+        <div class="file-list" id="file-list">
+          <div style="padding: 20px; color: #8b949e; text-align: center">
+            Scanning directory...
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: PREVIEW -->
+      <div class="panel">
+        <div class="panel-head uc">
+          <span>PREVIEW</span>
+          <div class="flex" style="align-items: center; gap: 15px">
+            <div class="toggle-label" title="Strip comments and whitespace">
+              <input
+                type="checkbox"
+                id="minify-mode"
+                onchange="fetchPreview()"
+              />
+              Minify
+            </div>
+            <select id="format-select" onchange="fetchPreview()">
+              <option value="xml">XML (Claude)</option>
+              <option value="markdown">Markdown (GPT)</option>
+            </select>
+          </div>
+        </div>
+        <textarea
+          id="preview-area"
+          readonly
+          placeholder="// Select files from the left to generate context..."
+        ></textarea>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="header" style="grid-column: 1 / -1; border-top: none">
+        <div class="uc" style="font-size: 0.8rem; color: #8b949e">
+          Selected: <strong id="count" style="color: var(--text)">0</strong> |
+          Tokens: <strong id="tokens" style="color: var(--text)">0</strong> |
+          Est. Cost:
+          <strong id="cost" style="color: var(--accent)">$0.00</strong>
+        </div>
+        <button class="btn" id="copy-btn" onclick="copyToClipboard()" disabled>
+          COPY TO CLIPBOARD
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let allFiles = [];
+      let selected = new Set();
+      let presets = {};
+      let watchInterval = null;
+
+      // INIT
+      const port = window.location.port;
+      document.getElementById("port-display").innerText = port;
+
+      loadFiles();
+      loadPresets();
+
+      async function loadFiles() {
+        try {
+          const res = await fetch("/api/files");
+          allFiles = await res.json();
+          renderList();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function loadPresets() {
+        try {
+          const res = await fetch("/api/presets");
+          presets = await res.json();
+          renderPresets();
+        } catch (e) {}
+      }
+
+      // RENDERING
+      function renderList(filter = "") {
+        const list = document.getElementById("file-list");
+        list.innerHTML = "";
+
+        const filtered = allFiles.filter((f) =>
+          f.toLowerCase().includes(filter.toLowerCase())
+        );
+
+        if (filtered.length === 0) {
+          list.innerHTML =
+            '<div style="padding:20px; color: #8b949e; text-align: center;">No files found</div>';
+          return;
+        }
+
+        filtered.forEach((f) => {
+          const div = document.createElement("div");
+          div.className = `file-item ${selected.has(f) ? "selected" : ""}`;
+          div.onclick = () => toggleFile(f);
+          div.innerHTML = `<div class="check"></div> ${f}`;
+          list.appendChild(div);
+        });
+      }
+
+      function renderPresets() {
+        const bar = document.getElementById("presets-list");
+        bar.innerHTML = "";
+
+        if (Object.keys(presets).length === 0) {
+          bar.innerHTML =
+            '<span style="color:#8b949e; font-size:0.7rem; padding: 0 5px;">No presets saved yet</span>';
+          return;
+        }
+
+        Object.keys(presets).forEach((name) => {
+          const tag = document.createElement("div");
+          tag.className = "preset-tag";
+          tag.innerHTML = `<span>${name}</span> <span class="preset-del" onclick="deletePreset('${name}', event)">×</span>`;
+          tag.onclick = (e) => {
+            if (e.target.tagName !== "SPAN") loadPreset(name);
+          };
+          tag.firstElementChild.onclick = () => loadPreset(name);
+          bar.appendChild(tag);
+        });
+      }
+
+      // LOGIC
+      function toggleFile(f) {
+        if (selected.has(f)) selected.delete(f);
+        else selected.add(f);
+
+        // Optimistic UI update for specific item (faster than full re-render)
+        renderList(document.getElementById("search").value);
+
+        updateStats();
+        fetchPreview();
+      }
+
+      function updateStats() {
+        document.getElementById("count").innerText = selected.size;
+        document.getElementById("copy-btn").disabled = selected.size === 0;
+      }
+
+      document
+        .getElementById("search")
+        .addEventListener("input", (e) => renderList(e.target.value));
+
+      // PRESETS
+      async function savePreset() {
+        const name = document.getElementById("preset-name").value.trim();
+        if (!name) return alert("Please enter a preset name");
+        if (selected.size === 0) return alert("Please select some files first");
+
+        await fetch("/api/presets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, files: Array.from(selected) }),
+        });
+        loadPresets();
+        document.getElementById("preset-name").value = "";
+      }
+
+      function loadPreset(name) {
+        selected = new Set(presets[name] || []);
+        renderList();
+        updateStats();
+        fetchPreview();
+      }
+
+      async function deletePreset(name, e) {
+        e.stopPropagation();
+        if (!confirm(`Delete preset "${name}"?`)) return;
+        await fetch(`/api/presets/${name}`, { method: "DELETE" });
+        loadPresets();
+      }
+
+      // PREVIEW & WATCH
+      async function fetchPreview() {
+        if (selected.size === 0) {
+          document.getElementById("preview-area").value = "";
+          updateStatsUI(0);
+          return;
+        }
+
+        const format = document.getElementById("format-select").value;
+        const minify = document.getElementById("minify-mode").checked;
+
+        try {
+          const res = await fetch("/api/bundle", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              files: Array.from(selected),
+              format,
+              minify,
+            }),
+          });
+          const data = await res.json();
+
+          document.getElementById("preview-area").value = data.content;
+          updateStatsUI(data.content.length);
+        } catch (e) {
+          console.error("Failed to fetch preview");
+        }
+      }
+
+      function updateStatsUI(charCount) {
+        const tokens = Math.ceil(charCount / 4);
+        document.getElementById("tokens").innerText = tokens.toLocaleString();
+
+        // $5.00 / 1M tokens (Approximate blended rate for GPT-4o / Claude 3.5 Sonnet)
+        const cost = (tokens / 1000000) * 5.0;
+        document.getElementById("cost").innerText = "$" + cost.toFixed(4);
+      }
+
+      function toggleWatch() {
+        const active = document.getElementById("watch-mode").checked;
+        if (active) {
+          watchInterval = setInterval(fetchPreview, 2000);
+          // Visual feedback
+          document.getElementById("watch-mode").parentElement.style.color =
+            "var(--accent)";
+        } else {
+          clearInterval(watchInterval);
+          document.getElementById("watch-mode").parentElement.style.color =
+            "#8b949e";
+        }
+      }
+
+      async function copyToClipboard() {
+        const text = document.getElementById("preview-area").value;
+        if (!text) return;
+
+        await navigator.clipboard.writeText(text);
+
+        const btn = document.getElementById("copy-btn");
+        const originalText = btn.innerText;
+
+        btn.innerText = "COPIED TO CLIPBOARD!";
+        btn.style.borderColor = "#2ea043"; // Green
+        btn.style.color = "#2ea043";
+
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.borderColor = "";
+          btn.style.color = "";
+        }, 2000);
+      }
+    </script>
+  </body>
+</html>
