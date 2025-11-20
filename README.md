@@ -1,17 +1,14 @@
-# Contextex 🚀
+# Promptex 🚀
 
 > **Turn your local codebase into LLM-ready context in seconds.**
 
-[![npm version](https://img.shields.io/npm/v/contextex.svg)](https://www.npmjs.com/package/contextex)
+[![npm version](https://img.shields.io/npm/v/promptex.svg)](https://www.npmjs.com/package/promptex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Node.js](https://img.shields.io/badge/Node.js-v16+-green.svg)
 
-**Contextex** is a zero-config, localhost web interface that helps you select, visualize, and bundle your code files for Large Language Models (Claude, ChatGPT, DeepSeek).
+**Promptex** is a zero-config, localhost web interface that helps you select, visualize, and bundle your code files for Large Language Models (Claude, ChatGPT, DeepSeek).
 
 It solves the **copy-paste fatigue** by providing a clean "Switchboard" UI to toggle files, estimate tokens, and format everything into a single prompt.
-
-![Screenshot Placeholder](https://via.placeholder.com/800x400?text=Contextex+UI+Screenshot)
-_(Add a real screenshot here later!)_
 
 ---
 
@@ -32,7 +29,7 @@ _(Add a real screenshot here later!)_
 You don't need to install anything. Just run it inside any project folder:
 
 ```bash
-npx contextex
+npx promptex
 ```
 
 Your dashboard opens at:
@@ -41,13 +38,13 @@ Your dashboard opens at:
 ### Global Installation (Optional)
 
 ```bash
-npm install -g contextex
+npm install -g promptex
 ```
 
 Then run:
 
 ```
-contextex
+promptex
 ```
 
 ---
@@ -57,25 +54,25 @@ contextex
 ### Start Normally
 
 ```bash
-contextex
+promptex
 ```
 
 ### Custom Port
 
 ```bash
-contextex -p 8080
+promptex -p 8080
 ```
 
 ### Headless (No Browser Auto-Open)
 
 ```bash
-contextex --no-open
+promptex --no-open
 ```
 
 ### Help
 
 ```bash
-contextex --help
+promptex --help
 ```
 
 ---
@@ -83,7 +80,7 @@ contextex --help
 ## 💡 Pro Tips
 
 1. **Linked Mode saves time**
-   Select one file (like a React component) → Contextex auto-grabs all imported utilities and sub-components.
+   Select one file (like a React component) → Promptex auto-grabs all imported utilities and sub-components.
 
 2. **XML vs Markdown Output**
 
@@ -103,7 +100,7 @@ contextex --help
 Try:
 
 ```bash
-sudo npx contextex
+sudo npx promptex
 ```
 
 Or fix global npm permissions (recommended).
@@ -111,7 +108,7 @@ Or fix global npm permissions (recommended).
 ### **Port Already in Use?**
 
 ```bash
-contextex -p 4000
+promptex -p 4000
 ```
 
 ---
