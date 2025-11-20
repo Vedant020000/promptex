@@ -127,27 +127,3 @@ promptex -p 4000
 MIT © **Vedant020000**
 
 ---
-
-## ✅ Final Check: How to Publish
-
-1. Make sure the following exist:
-
-   - `package.json`
-   - `README.md`
-   - `bin/cli.js`
-   - `server.js`
-   - `public/`
-
-2. Login:
-
-```bash
-npm login
-```
-
-3. Publish:
-
-```bash
-npm publish --access public
-```
-
----
