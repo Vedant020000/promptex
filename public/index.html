@@ -258,6 +258,71 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #8b949e;
       }
+
+      /* TREE VIEW */
+      .tree-root {
+        font-size: 0.85rem;
+      }
+      .folder-row {
+        display: flex;
+        align-items: center;
+        padding: 4px 6px;
+        cursor: pointer;
+        color: #8b949e;
+        user-select: none;
+        border-radius: 4px;
+      }
+      .folder-row:hover {
+        background: #21262d;
+        color: #c9d1d9;
+      }
+      .folder-content {
+        padding-left: 10px;
+        display: none;
+        border-left: 1px solid #30363d;
+        margin-left: 11px;
+      }
+      .folder-content.open {
+        display: block;
+      }
+      .arrow {
+        width: 14px;
+        height: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        transition: transform 0.15s;
+        margin-right: 6px;
+        color: #8b949e;
+      }
+      .arrow::before {
+        content: "▶"; /* Triangle */
+      }
+      .arrow.open {
+        transform: rotate(90deg);
+      }
+
+      .tree-file {
+        display: flex;
+        align-items: center;
+        padding: 4px 6px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-left: 4px;
+        color: #c9d1d9;
+      }
+      .tree-file:hover {
+        background: #21262d;
+      }
+      .tree-file.selected {
+        background: rgba(88, 166, 255, 0.15);
+        color: #58a6ff;
+      }
+      .tree-file .check {
+        margin-right: 8px;
+        transform: scale(0.9);
+      }
     </style>
   </head>
   <body>
@@ -367,6 +432,7 @@
       let selected = new Set();
       let presets = {};
       let watchInterval = null;
+      let expandedFolders = new Set(); // Track expanded folder paths
 
       // INIT
       const port = window.location.port;
@@ -398,23 +464,136 @@
         const list = document.getElementById("file-list");
         list.innerHTML = "";
 
-        const filtered = allFiles.filter((f) =>
-          f.toLowerCase().includes(filter.toLowerCase())
-        );
+        // 1. SEARCH MODE (Flat List)
+        if (filter) {
+          const filtered = allFiles.filter((f) =>
+            f.toLowerCase().includes(filter.toLowerCase())
+          );
 
-        if (filtered.length === 0) {
+          if (filtered.length === 0) {
+            list.innerHTML =
+              '<div style="padding:20px; color: #8b949e; text-align: center;">No matches</div>';
+            return;
+          }
+
+          filtered.forEach((f) => {
+            const div = document.createElement("div");
+            div.className = `file-item ${selected.has(f) ? "selected" : ""}`;
+            div.onclick = () => toggleFile(f);
+            div.innerHTML = `<div class="check"></div> ${f}`;
+            list.appendChild(div);
+          });
+          return;
+        }
+
+        // 2. TREE VIEW (Default)
+        if (allFiles.length === 0) {
           list.innerHTML =
             '<div style="padding:20px; color: #8b949e; text-align: center;">No files found</div>';
           return;
         }
 
-        filtered.forEach((f) => {
-          const div = document.createElement("div");
-          div.className = `file-item ${selected.has(f) ? "selected" : ""}`;
-          div.onclick = () => toggleFile(f);
-          div.innerHTML = `<div class="check"></div> ${f}`;
-          list.appendChild(div);
+        const tree = buildTree(allFiles);
+        const treeRoot = document.createElement("div");
+        treeRoot.className = "tree-root";
+        renderTreeNodes(tree, treeRoot);
+        list.appendChild(treeRoot);
+      }
+
+      // TREE LOGIC
+      function buildTree(paths) {
+        const root = { children: {} };
+        for (const p of paths) {
+          const parts = p.split(/[\/\\]/);
+          let current = root;
+          let currentPath = "";
+          for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            const isFile = i === parts.length - 1;
+            currentPath = currentPath ? currentPath + "/" + part : part;
+
+            if (!current.children[part]) {
+              current.children[part] = {
+                name: part,
+                path: currentPath,
+                type: isFile ? "file" : "folder",
+                children: {},
+              };
+            }
+            current = current.children[part];
+          }
+        }
+        return root;
+      }
+
+      function renderTreeNodes(node, container) {
+        // Sort: Folders first, then Files. Alphabetical within groups.
+        const entries = Object.values(node.children).sort((a, b) => {
+          if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
+          return a.name.localeCompare(b.name);
         });
+
+        entries.forEach((item) => {
+          if (item.type === "folder") {
+            // Folder Row
+            const folderDiv = document.createElement("div");
+            const isOpen = expandedFolders.has(item.path);
+
+            const row = document.createElement("div");
+            row.className = "folder-row";
+            row.onclick = (e) =>
+              toggleFolder(item.path, contentDiv, arrowSpan, e);
+
+            const arrowSpan = document.createElement("span");
+            arrowSpan.className = `arrow ${isOpen ? "open" : ""}`;
+
+            const icon = document.createElement("span");
+            icon.innerText = "📁";
+            icon.style.marginRight = "6px";
+            icon.style.fontSize = "12px";
+
+            row.appendChild(arrowSpan);
+            row.appendChild(icon);
+            row.appendChild(document.createTextNode(item.name));
+
+            // Children Container
+            const contentDiv = document.createElement("div");
+            contentDiv.className = `folder-content ${isOpen ? "open" : ""}`;
+
+            // Recurse
+            renderTreeNodes(item, contentDiv);
+
+            folderDiv.appendChild(row);
+            folderDiv.appendChild(contentDiv);
+            container.appendChild(folderDiv);
+          } else {
+            // File Row
+            const fileDiv = document.createElement("div");
+            fileDiv.className = `tree-file ${
+              selected.has(item.path) ? "selected" : ""
+            }`;
+            fileDiv.onclick = () => toggleFile(item.path);
+
+            // Indent based on depth is handled by parent folder padding,
+            // but we need a little padding to align with folder text
+            fileDiv.innerHTML = `<div class="check"></div> 📄 <span style="margin-left:5px">${item.name}</span>`;
+
+            container.appendChild(fileDiv);
+          }
+        });
+      }
+
+      function toggleFolder(path, contentDiv, arrowSpan, e) {
+        e.stopPropagation();
+        if (expandedFolders.has(path)) {
+          expandedFolders.delete(path);
+          contentDiv.classList.remove("open");
+          arrowSpan.classList.remove("open");
+        } else {
+          expandedFolders.add(path);
+          contentDiv.classList.add("open");
+          arrowSpan.classList.add("open");
+        }
       }
 
       function renderPresets() {
